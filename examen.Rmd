@@ -1,0 +1,147 @@
+---
+title: "Examen R-Stats Geeft"
+author: "Votre nom"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+# Déroulement de l'examen
+
+Vous travaillerez de 9h15 à 12h30 au plus tard.
+Vous aurez accès au cours, à l'internet...
+La seule exigence est que vous n'utilisiez pas d'aide extérieure.
+
+Vous devrez répondre aux questions dans ce fichier en ajoutant du texte et du code.
+Les questions sont sous la forme de puces :
+
+-   Ceci est une question.
+
+> Utilisez le format "Blockquote" pour le texte de vos réponses (en mode visuel, utilisez le menu "Format" ; en mode source, commencez chaque paragraphe par `>` et sautez une ligne avant vos réponses).
+> Ajoutez le code dans des bouts de code standard:
+
+```{r}
+# Code
+library("tidyverse")
+```
+
+> Tricotez souvent pour ne pas accumuler des erreurs de code.
+
+Vous devez répondre aussi clairement que possible, en rédigeant vos réponses, mais soyez factuels et concis : inutile de montrer que vous connaissez le cours puisque vous avez accès aux documents.
+Votre code doit être facile à lire, avec des commentaires quand c'est utile, formaté correctement (attention aux espaces, aux indentations, à la clarté des noms des objets, etc.).
+
+A la fin de votre travail, envoyez le fichier `examen.Rmd` à [eric.marcon\@agroparistech.fr](mailto:eric.marcon@agroparistech.fr?subject=Examen%20R-Stats%20Geeft)
+
+Les données nécessaires se trouvent dans le sous-dossier `data`.
+
+L'examen comporte plusieurs questions à traiter :
+
+-   Une régression,
+-   Une AFC,
+-   Une bagarre avec les données,
+-   Un problème de probabilités avec du code R.
+
+# Régression
+
+Les brochets sont des prédateurs supérieurs qui cumulent des pesticides au cours de leur vie.
+Vous devez quantifier le lien entre la concentration en DDT et l'âge des poissons.
+
+Les données (âge et concentration en DDT) de 15 brochets sont dans le fichier `data/brochets.csv` au format anglo-saxon.
+
+-   Visualisez les données.
+-   Estimez un modèle linéaire simple, vérifiez les hypothèses.
+-   Estimez le modèle qui relie le logarithme de la concentration en DDT à l'âge. Comparez-le au précédent.
+-   Essayez d'améliorer la régression en permettant une relation non-linéaire par un modèle polynomial de degré 2.
+-   Sélectionnez le meilleur modèle polynomial.
+
+# AFC
+
+Les abondances de 6 espèces d'oiseaux dans 4 régions ont été tirées de Blondel et Farré (1988).
+Elles se trouvent dans le fichier `data/Oiseaux.csv`.
+
+-   Montrez que les espèces d'oiseaux ne sont pas distribuées indépendamment des régions.
+
+Attention : les données sont présentées sous la forme d'un tableau de contingence dont la première colonne (l'espèce) doit être retirée parce qu'elle ne contient pas de données utiles.
+
+-   Faites une figure en mosaïque qui vous permettra de comprendre la distribution. Quelles espèces sont caractéristiques de quelles régions ?
+-   Effectuez une analyse factorielle des correspondances et interprétez les résultats. Vérifiez leur cohérence avec ceux de la figure en mosaïque.
+
+# Bagarre
+
+Faites une carte de la parcelle 6 de Paracou (`data/Paracou6.csv`) qui montrera l'emplacement du plus gros arbre de chaque famille botanique.
+
+Aide: vous devrez d'abord trouver la taille du plus gros arbre de chaque famille, mais vous perdrez toutes les informations individuelles sur les arbres.
+Vous devrez donc utiliser une jointure pour retrouver les coordonnées de l'arbre.
+Réfléchissez bien aux colonnes qui vont servir à la jointure et nommez la bonne colonne avec le bon nom au bon moment.
+
+# Probabilités
+
+La méthode de Monte-Carlo permet de tester des hypothèses ou d'estimer des valeurs par simulation.
+Vous allez l'appliquer ici.
+
+Le graphique suivant montre un quart de cercle de rayon 1 dans le carré de côté 1, les deux tracés à partir de l'origine du repère :
+
+```{r}
+# La fonction circle calcule les coordonnées d'un point du cercle de rayon 1
+# theta est l'angle de la coordonnée polaire du point
+circle <- function(theta) {
+  z <- exp(1i * theta)
+  return(c(Re(z), Im(z)))
+}
+# Pour tous les angles de 0 à pi/2, par valeur de 0,01
+seq(from = 0, to = pi / 2, by = 1/100) %>% 
+  # Calculer les coordonnées du point sur le cercle
+  sapply(FUN = circle) %>% 
+  # Transposer la matrice obtenue (ligne 1 = x, ligne 2 = y)
+  t() %>% 
+  # La transformer en tibble, nommer les colonnes
+  as_tibble(.name_repair = ~c("x", "y")) %>% 
+  # Tracer le cercle
+  ggplot(aes(x = x, y = y)) +
+    geom_line() +
+    coord_fixed() +
+    # Ajouter le carré
+    geom_hline(yintercept = 0:1) +
+    geom_vline(xintercept = 0:1) ->
+  # Enregistrer le graphique
+  gg_circle
+
+# Afficher le graphique
+gg_circle
+```
+
+Ne modifiez pas le code ci-desus : il produit la figure de base sur laquelle vous allez ajoutez des éléments.
+
+-   Tirez 10 points aléatoirement (uniformément) dans le carré de côté 1 et affichez-les sur le graphique.
+
+Aide : créez un tibble appelé `mes_points` dont les colonnes s'appellent `x` et `y`, dont le contenu sera un vecteur de nombres aléatoires tirés dans la loi uniforme.
+Ajoutez une géométrie au graphique `gg_circle` en précisant ses données (`data = mes_points`) et son esthétique (`, mapping = aes(...)`).
+
+-   La probabilité qu'un point se trouve dans le quart de cercle centré sur l'origine du repère est $\pi / 4$. Expliquez pourquoi par la géométrie.
+
+Aide : le rayon du cercle est 1.
+
+-   On considère être un succès qu'un point tiré se trouve dans le quart de cercle.
+    Quelle loi suit le nombre de succès pour $n_{sim}$ tirages ?
+    Quelle est son espérance ?
+
+-   On note $n_+$ le nombre de succès.
+    Ecrire la valeur de $\pi$ en fonction de $n_{sim}$ et $n_+$
+
+-   Dans le tibble `mes_points`, ajoutez une colonne qui indique si chaque tirage est un succès.
+
+Aide : calculez d'abord la distance du point à l'origine puis testez si elle est inférieure au rayon du cercle (il vous faudra deux colonnes).
+
+-   Comptez le nombre de succès pour connaître $n_+$ et estimez $\pi$.
+    Comparez avec sa valeur : `r pi`.
+
+-   Tirez maintenant un million de points au lieu de 10 et donnez votre nouvelle estimation de $\pi$.
+
+# Références
+
+J. Blondel & H.
+Farré.
+The convergent trajectories of bird communities along ecological successions in european forests.
+Öcologia (Berlin), 75 :83–93, 1988.
