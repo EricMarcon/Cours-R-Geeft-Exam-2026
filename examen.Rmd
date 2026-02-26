@@ -54,7 +54,6 @@ Les données (âge et concentration en DDT) de 15 brochets sont dans le fichier 
 -   Estimez un modèle linéaire simple, vérifiez les hypothèses.
 -   Estimez le modèle qui relie le logarithme de la concentration en DDT à l'âge. Comparez-le au précédent.
 -   Essayez d'améliorer la régression en permettant une relation non-linéaire par un modèle polynomial de degré 2.
--   Sélectionnez le meilleur modèle polynomial.
 
 # AFC
 
