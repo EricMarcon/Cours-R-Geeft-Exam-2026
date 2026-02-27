@@ -59,13 +59,25 @@ Les données (âge et concentration en DDT) de 15 brochets sont dans le fichier 
 
 Les abondances de 6 espèces d'oiseaux dans 4 régions ont été tirées de Blondel et Farré (1988).
 Elles se trouvent dans le fichier `data/Oiseaux.csv`.
+Les fonctions que vous allez utiliser ont besoin d'un tableau avec des noms de ligne.
+Vous devez donc préparer les données :
 
--   Montrez que les espèces d'oiseaux ne sont pas distribuées indépendamment des régions.
+-   mettez de côté dans un vecteur les noms des espèces,
+
+-   éliminez la première colonne du dataframe,
+
+-   nommez les lignes du dataframe sur le modèle : `rownames(nom_du_tableau) <- vecteur_des_noms`.
+
+Vous pouvez maintenant analyser les données.
+
+-   Montrez par un test statistique que les espèces d'oiseaux ne sont pas distribuées indépendamment des régions.
 
 Attention : les données sont présentées sous la forme d'un tableau de contingence dont la première colonne (l'espèce) doit être retirée parce qu'elle ne contient pas de données utiles.
 
 -   Faites une figure en mosaïque qui vous permettra de comprendre la distribution. Quelles espèces sont caractéristiques de quelles régions ?
 -   Effectuez une analyse factorielle des correspondances et interprétez les résultats. Vérifiez leur cohérence avec ceux de la figure en mosaïque.
+
+Aide : vous utiliserez la fonction `CA()` du package *FactoMineR*.
 
 # Bagarre
 
