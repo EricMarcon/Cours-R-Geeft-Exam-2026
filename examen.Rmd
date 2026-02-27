@@ -48,12 +48,159 @@ L'examen comporte plusieurs questions à traiter :
 Les brochets sont des prédateurs supérieurs qui cumulent des pesticides au cours de leur vie.
 Vous devez quantifier le lien entre la concentration en DDT et l'âge des poissons.
 
-Les données (âge et concentration en DDT) de 15 brochets sont dans le fichier `data/brochets.csv` au format anglo-saxon.
+Les données (âge et concentration en DDT) de 15 brochets sont dans le fichier `data/Brochets.csv` au format anglo-saxon.
 
 -   Visualisez les données.
+
+```{r}
+library("readr") # Déjà chargé par library("tidiverse")
+read_csv("data/Brochet.csv") %>% 
+  print() -> 
+  brochets
+```
+
+> La colonne `Obs` n'a aucune utilité.
+
 -   Estimez un modèle linéaire simple, vérifiez les hypothèses.
+
+> Représentation grahphique :
+
+```{r}
+brochets %>% 
+  ggplot(aes(x = Age, y = TxDDT)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+> Estimation du modèle :
+
+```{r}
+brochets_lm <- lm(TxDDT ~ Age, data = brochets)
+summary(brochets_lm)
+```
+
+> Le modèle explique 76% de la variabilité.
+> La variable age est significative.
+> Comme la constante n'est pas différente de 0, le modèle pourrait être estimé sans elle.
+> Je décide de la conserver.
+
+> Vérification de la distribution des résidus :
+
+```{r}
+plot(brochets_lm, which = 1)
+```
+
+> Les résidus ont une forme de cuvette : les points centraux ont des résidus négatifs, les extrêmes des valeurs positives.
+
+> Vérification de la normalité des résidus :
+
+```{r}
+plot(brochets_lm, which = 2)
+```
+
+> Le test de Shapiro ne rejette pas la normalité des résidus.
+> Remarque : le nombre de points est très petit, la puissance du test est donc faible.
+
+```{r}
+brochets_lm %>% residuals() %>% shapiro.test()
+```
+
+> Effet de levier : le point 13 (6 ans, taux = 1,1), tout en haut à droite du nuage de points, a un fort effet de levier positif, compensé par celui, négatif du point 11 (le plus bas des brochets de 5 ans).
+> Ces deux points apparaissent dans toutes les figures de diagnostic.
+
+```{r}
+plot(brochets_lm, which = 5)
+```
+
+> Conclusion : la régression ne viole pas les hypothèses de façon flagrante mais souffre de plusieurs problèmes : les résidus ne sont pas répartis de façon homogène, deux points ont un effet de levier excessif.
+> Le fait que les ages soient des valeurs discrètes limite la pertinence du modèle.
+
 -   Estimez le modèle qui relie le logarithme de la concentration en DDT à l'âge. Comparez-le au précédent.
+
+> Représentation grahphique :
+
+```{r}
+brochets %>% 
+  ggplot(aes(x = Age, y = TxDDT)) +
+  geom_point() +
+  scale_y_log10() +
+  geom_smooth(method = "lm")
+```
+
+> Estimation du modèle :
+
+```{r}
+brochets_lm_log <- lm(log(TxDDT) ~ Age, data = brochets)
+summary(brochets_lm_log)
+```
+
+> Le modèle linéaire s'ajuste mieux après la transformation de la variable expliquée avec un R² de 87%.
+
+> Vérification de la distribution des résidus : sans amélioration par rapport au modèle original.
+
+```{r}
+plot(brochets_lm_log, which = 1)
+```
+
+> Vérification de la normalité des résidus : similaire au précédent.
+
+```{r}
+plot(brochets_lm_log, which = 2)
+```
+
+> Le test de Shapiro ne rejette pas la normalité des résidus.
+
+```{r}
+brochets_lm_log %>% residuals() %>% shapiro.test()
+```
+
+> Effet de levier : les point 13 et 11 ont toujours les mêmes effets, mais apparemment moins importants que dans le modèle original.
+
+```{r}
+plot(brochets_lm_log, which = 5)
+```
+
+> Conclusion : la régression du logarithme de la concentration en DDT fonctionne mieux que le modèle original.
+
 -   Essayez d'améliorer la régression en permettant une relation non-linéaire par un modèle polynomial de degré 2.
+
+> Estimation du modèle :
+
+```{r}
+brochets_lm_log_poly <- lm(log(TxDDT) ~ poly(Age, degree = 2), data = brochets)
+summary(brochets_lm_log_poly)
+```
+
+> Le coefficient de l'âge au carré est significatif (p-value = 3%) et le R² est amélioré.
+> Le R² ajusté, qui prend en compte l'ajout d'un paramètre, est aussi amélioré.
+> Le modèle est donc meilleur que le précédent.
+
+> Vérification de la distribution des résidus : La distribution des résidus est beaucoup plus homogène.
+
+```{r}
+plot(brochets_lm_log_poly, which = 1)
+```
+
+> Vérification de la normalité des résidus : similaire au précédent.
+
+```{r}
+plot(brochets_lm_log_poly, which = 2)
+```
+
+> Le test de Shapiro ne rejette pas la normalité des résidus.
+
+```{r}
+brochets_lm_log_poly %>% residuals() %>% shapiro.test()
+```
+
+> Effet de levier : le point 11 ne pose plus de problème.
+
+```{r}
+plot(brochets_lm_log_poly, which = 5)
+```
+
+> Conclusion : la régression du logarithme de la concentration en DDT par l'age et l'age au carré est le meilleur modèle.
+> Le polynôme de degré 2 a réglé le problème d'hétérogénéité de la distributioin des résidus (négatifs pour les valeurs intermédiaires) en permettant d'ajuster la courbe de régression.
 
 # AFC
 
@@ -62,22 +209,95 @@ Elles se trouvent dans le fichier `data/Oiseaux.csv`.
 Les fonctions que vous allez utiliser ont besoin d'un tableau avec des noms de ligne.
 Vous devez donc préparer les données :
 
+```{r}
+read_csv2("data/Oiseaux.csv") %>% 
+  print() -> 
+  oiseaux
+```
+
 -   mettez de côté dans un vecteur les noms des espèces,
+
+```{r}
+especes <- oiseaux[, 1]
+```
 
 -   éliminez la première colonne du dataframe,
 
+```{r}
+oiseaux <- oiseaux[, -1] 
+```
+
 -   nommez les lignes du dataframe sur le modèle : `rownames(nom_du_tableau) <- vecteur_des_noms`.
+
+```{r}
+row.names(oiseaux) <- especes$Espèce
+```
 
 Vous pouvez maintenant analyser les données.
 
+```{r}
+oiseaux
+```
+
 -   Montrez par un test statistique que les espèces d'oiseaux ne sont pas distribuées indépendamment des régions.
+
+\$ Le test du $\chi^2$ est approprié:
+
+```{r}
+chisq.test(oiseaux)
+```
+
+> La probabilité de se tromper en rejetant l’hypothèse d'indépendance des lignes et des colonnes est très proche de 0 : les oiseaux ne sont pas distribués indépendamment des régions.
 
 Attention : les données sont présentées sous la forme d'un tableau de contingence dont la première colonne (l'espèce) doit être retirée parce qu'elle ne contient pas de données utiles.
 
 -   Faites une figure en mosaïque qui vous permettra de comprendre la distribution. Quelles espèces sont caractéristiques de quelles régions ?
+
+```{r}
+mosaicplot(oiseaux, shade = TRUE, main = "")
+```
+
+> Des patrons de distribution sont visibles :
+
+> -   Les espèces 1 et 2 se trouvent en Bourgogne et pas en Pologne,
+> -   Les espèces 3 et 5 sont en Pologne,
+> -   Les espèces 4 et 6 sont en Provence.
+
 -   Effectuez une analyse factorielle des correspondances et interprétez les résultats. Vérifiez leur cohérence avec ceux de la figure en mosaïque.
 
+```{r}
+library("FactoMineR")
+oiseaux %>% 
+  CA() ->
+  oiseaux_CA
+```
+
 Aide : vous utiliserez la fonction `CA()` du package *FactoMineR*.
+
+> Valeurs propres :
+
+```{r}
+library("factoextra")
+oiseaux_CA %>% 
+  fviz_eig()
+```
+
+> Le premier axe représente presque toute la variabilité.
+> On en affichera deux pour la lisibilité.
+
+```{r}
+oiseaux_CA %>% 
+  fviz_ca_biplot()
+```
+
+> L'axe 1 associe la Bourgogne aux espèces 1 et 2.
+> Les espèces 3 à 6 sont à l'opposé.
+> L'axe 2 montre l'opposition entre la Pologne (espèces 3 et 5) et la Provence (espèces 4 et 6).
+> La Corse se trouve au centre de gravité du graphique, sans espèce caractéristique claire.
+> Ces résultats sont cohérents avec ceux du graphique en mosaïque, même si les espèces 1 et 4 présentes en Corse ne sont pas visibles dans l'AFC.
+
+> On pourrait s'attendre à un gradient géographique (nord-sud, plus ou moins continental, est-ouest) mais l'AFC ne montre rien de tel.
+> La distribution des espèces d'oiseau répond à d'autres facteurs, inexplicables avec ces données.
 
 # Bagarre
 
@@ -86,6 +306,40 @@ Faites une carte de la parcelle 6 de Paracou (`data/Paracou6.csv`) qui montrera 
 Aide: vous devrez d'abord trouver la taille du plus gros arbre de chaque famille, mais vous perdrez toutes les informations individuelles sur les arbres.
 Vous devrez donc utiliser une jointure pour retrouver les coordonnées de l'arbre.
 Réfléchissez bien aux colonnes qui vont servir à la jointure et nommez la bonne colonne avec le bon nom au bon moment.
+
+> Lecture des données
+
+```{r}
+read_csv2("data/Paracou6.csv") ->
+  paracou6
+```
+
+> Sélection de l'arbre le plus gros
+
+```{r}
+paracou6 %>% 
+  group_by(Family) %>% 
+  # Circonférence max. 
+  # La colonne calculée garde le nom de la variable pour la jointure à suivre
+  summarise(CircCorr = max(CircCorr)) ->
+  paracou6_max
+```
+
+> Jointure avec la table des arbres et carte
+
+```{r}
+paracou6 %>% 
+  inner_join(paracou6_max) %>% 
+  ggplot(aes(x = Xfield, y = Yfield, color = Family, size = CircCorr)) +
+  geom_point() +
+  coord_fixed() +
+  labs(x = "", y = "", color = "Famille", size = "Circonférence") +
+  # Suppression de la légende, trop grande
+  theme(legend.position='none')
+```
+
+> Le graphique contient trop d'entrées de légende pour que cette information soit lisible : on peut supprimer la légende.
+> L'information sur les familles ne peut pas être représentée de cette façon.
 
 # Probabilités
 
@@ -123,32 +377,94 @@ seq(from = 0, to = pi / 2, by = 1/100) %>%
 gg_circle
 ```
 
-Ne modifiez pas le code ci-desus : il produit la figure de base sur laquelle vous allez ajoutez des éléments.
+Ne modifiez pas le code ci-dessus : il produit la figure de base sur laquelle vous allez ajoutez des éléments.
 
 -   Tirez 10 points aléatoirement (uniformément) dans le carré de côté 1 et affichez-les sur le graphique.
 
 Aide : créez un tibble appelé `mes_points` dont les colonnes s'appellent `x` et `y`, dont le contenu sera un vecteur de nombres aléatoires tirés dans la loi uniforme.
 Ajoutez une géométrie au graphique `gg_circle` en précisant ses données (`data = mes_points`) et son esthétique (`, mapping = aes(...)`).
 
+```{r}
+# Nombre de simulations
+simulations_n <- 10
+# Tirage des points
+mes_points <- tibble(
+  x = runif(simulations_n),
+  y = runif(simulations_n)
+)
+# Ajout au graphique
+gg_circle +
+  geom_point(
+    data = mes_points,
+    aes(x = x, y = y)
+  )
+```
+
 -   La probabilité qu'un point se trouve dans le quart de cercle centré sur l'origine du repère est $\pi / 4$. Expliquez pourquoi par la géométrie.
+
+> Les points sont tirés dans le carré de surface 1.
+> La surface du quart de cercle de rayon 1 est $\pi / 4$.
+> La probabilité est le rapport des surfaces.
 
 Aide : le rayon du cercle est 1.
 
--   On considère être un succès qu'un point tiré se trouve dans le quart de cercle.
-    Quelle loi suit le nombre de succès pour $n_{sim}$ tirages ?
-    Quelle est son espérance ?
+-   On considère être un succès qu'un point tiré se trouve dans le quart de cercle. Quelle loi suit le nombre de succès pour $n_{sim}$ tirages ? Quelle est son espérance ?
 
--   On note $n_+$ le nombre de succès.
-    Ecrire la valeur de $\pi$ en fonction de $n_{sim}$ et $n_+$
+> Le nombre de succès suit une loi binomiale d'espérance $n_{sim} * \pi / 4$.
+
+-   On note $n_+$ le nombre de succès. Ecrire la valeur de $\pi$ en fonction de $n_{sim}$ et $n_+$
+
+> Le nombre de succès observé est l'estimateur de l'espérance : $n_{sim} * \pi / 4$, ce qui équivaut à $\pi = 4 * n_+ / n_{sim}$.
 
 -   Dans le tibble `mes_points`, ajoutez une colonne qui indique si chaque tirage est un succès.
 
+```{r}
+mes_points %>% 
+  mutate(
+    # Distance du point à l'origine
+    distance = sqrt(x^2 + y^2),
+    # Le point est dans le cercle si distance < rayon
+    succes = (distance <= 1)
+  ) ->
+mes_points
+```
+
 Aide : calculez d'abord la distance du point à l'origine puis testez si elle est inférieure au rayon du cercle (il vous faudra deux colonnes).
 
--   Comptez le nombre de succès pour connaître $n_+$ et estimez $\pi$.
-    Comparez avec sa valeur : `r pi`.
+-   Comptez le nombre de succès pour connaître $n_+$ et estimez $\pi$. Comparez avec sa valeur : `r pi`.
+
+```{r}
+# Estimation de pi
+4 * sum(mes_points$succes) / simulations_n
+```
+
+> La première décimale de $\pi$ est correcte.
 
 -   Tirez maintenant un million de points au lieu de 10 et donnez votre nouvelle estimation de $\pi$.
+
+> Code complet:
+
+```{r}
+# Nombre de simulations
+simulations_n <- 1E6
+# Tirage des points
+tibble(
+  x = runif(simulations_n),
+  y = runif(simulations_n)
+) %>% 
+  mutate(
+    # Distance du point à l'origine
+    distance = sqrt(x^2 + y^2),
+    # Le point est dans le cercle si distance < rayon
+    succes = (distance <= 1)
+  ) ->
+  mes_points
+# Estimation de pi
+4 * sum(mes_points$succes) / simulations_n
+```
+
+> L'estimation est plus proche de la vraie valeur mais reste assez grossière.
+> Il faut augmenter encore le nombre de tirages, mais le temps de calcul et le besoin en mémoire pour stocker `mes_points` va rapidement poser problème.
 
 # Références
 
