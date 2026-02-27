@@ -11,7 +11,7 @@
 
 <meta name="author" content="Votre nom" />
 
-<meta name="date" content="2026-02-26" />
+<meta name="date" content="2026-02-27" />
 
 <title>Examen R-Stats Geeft</title>
 
@@ -1481,7 +1481,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Examen R-Stats Geeft</h1>
 <h4 class="author">Votre nom</h4>
-<h4 class="date">2026-02-26</h4>
+<h4 class="date">2026-02-27</h4>
 
 </div>
 
@@ -1556,10 +1556,19 @@ non-linéaire par un modèle polynomial de degré 2.</li>
 <h1>AFC</h1>
 <p>Les abondances de 6 espèces d’oiseaux dans 4 régions ont été tirées
 de Blondel et Farré (1988). Elles se trouvent dans le fichier
-<code>data/Oiseaux.csv</code>.</p>
+<code>data/Oiseaux.csv</code>. Les fonctions que vous allez utiliser ont
+besoin d’un tableau avec des noms de ligne. Vous devez donc préparer les
+données :</p>
 <ul>
-<li>Montrez que les espèces d’oiseaux ne sont pas distribuées
-indépendamment des régions.</li>
+<li><p>mettez de côté dans un vecteur les noms des espèces,</p></li>
+<li><p>éliminez la première colonne du dataframe,</p></li>
+<li><p>nommez les lignes du dataframe sur le modèle :
+<code>rownames(nom_du_tableau) &lt;- vecteur_des_noms</code>.</p></li>
+</ul>
+<p>Vous pouvez maintenant analyser les données.</p>
+<ul>
+<li>Montrez par un test statistique que les espèces d’oiseaux ne sont
+pas distribuées indépendamment des régions.</li>
 </ul>
 <p>Attention : les données sont présentées sous la forme d’un tableau de
 contingence dont la première colonne (l’espèce) doit être retirée parce
@@ -1572,6 +1581,8 @@ distribution. Quelles espèces sont caractéristiques de quelles régions
 les résultats. Vérifiez leur cohérence avec ceux de la figure en
 mosaïque.</li>
 </ul>
+<p>Aide : vous utiliserez la fonction <code>CA()</code> du package
+<em>FactoMineR</em>.</p>
 </div>
 <div id="bagarre" class="section level1">
 <h1>Bagarre</h1>
