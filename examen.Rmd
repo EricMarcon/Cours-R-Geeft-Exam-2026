@@ -117,7 +117,7 @@ plot(brochets_lm, which = 5)
 
 -   Estimez le modèle qui relie le logarithme de la concentration en DDT à l'âge. Comparez-le au précédent.
 
-> Représentation grahphique :
+> Représentation graphique :
 
 ```{r}
 brochets %>% 
@@ -200,7 +200,7 @@ plot(brochets_lm_log_poly, which = 5)
 ```
 
 > Conclusion : la régression du logarithme de la concentration en DDT par l'age et l'age au carré est le meilleur modèle.
-> Le polynôme de degré 2 a réglé le problème d'hétérogénéité de la distributioin des résidus (négatifs pour les valeurs intermédiaires) en permettant d'ajuster la courbe de régression.
+> Le polynôme de degré 2 a réglé le problème d'hétérogénéité de la distribution des résidus (négatifs pour les valeurs intermédiaires) en permettant d'ajuster la courbe de régression.
 
 # AFC
 
@@ -335,7 +335,7 @@ paracou6 %>%
   coord_fixed() +
   labs(x = "", y = "", color = "Famille", size = "Circonférence") +
   # Suppression de la légende, trop grande
-  theme(legend.position='none')
+  theme(legend.position = "none")
 ```
 
 > Le graphique contient trop d'entrées de légende pour que cette information soit lisible : on peut supprimer la légende.
